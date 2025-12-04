@@ -7,6 +7,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { SwaggerModule } from '@nestjs/swagger';
 import { createDocument } from './swagger/swagger';
+import { EndpointService } from './endpoint/endpoint.service';
+import { Endpoint } from './endpoint/entities/endpoint.entity';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -26,29 +28,31 @@ async function bootstrap() {
   const swaggerPrefix = 'api-docs';
   const document = createDocument(app);
   SwaggerModule.setup(swaggerPrefix, app, document);
+  const configService = app.get(ConfigService);
+  const PORT = configService.get<number>('PORT');
+  await app.listen(PORT!);
 
+  const endpointService = app.get(EndpointService);
+  const routes = endpointService.getAllRoutes();
   const dataSource = app.get(DataSource);
 
   try {
     await dataSource.query('TRUNCATE endpoint RESTART IDENTITY CASCADE');
-    console.log('truncate successfully');
+
+    for (const route of routes) {
+      await dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(Endpoint)
+        .values({ url: route.path, method: route.method })
+        .execute();
+    }
+
+    console.log('Endpoint table truncated successfully');
   } catch (err) {
-    console.log('Failed to truncate table', err);
+    console.log('Failed to truncate endpoint table', err);
   }
 
-  console.log('\n📍 API Endpoints:\n');
-  Object.entries(document.paths).forEach(([path, methods]) => {
-    Object.keys(methods as object).forEach((method) => {
-      if (method !== 'parameters') {
-        console.log(`${method.toUpperCase()} ${path}`);
-      }
-    });
-  });
-
-  const configService = app.get(ConfigService);
-  const PORT = configService.get<number>('PORT');
-
-  await app.listen(PORT!);
   Logger.log(`Application is running on: http://localhost:${PORT}`);
 }
 bootstrap();
