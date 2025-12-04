@@ -1,4 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Permission } from './entities/permission.entity';
+import { Repository } from 'typeorm';
+import { AllowPermissionDto } from './dto';
 
 @Injectable()
-export class PermissionsService {}
+export class PermissionsService {
+  constructor(@InjectRepository(Permission) private permissionRepository: Repository<Permission>) {}
+
+  async allow(allowPermissionDto: AllowPermissionDto) {
+    const { roleName, endpointId, isAllow } = allowPermissionDto;
+
+    const permission = await this.permissionRepository.findOne({
+      where: {
+        roleName,
+        endpointId,
+      },
+    });
+
+    if (!permission)
+      throw new BadRequestException(`
+            ${roleName} and ${endpointId} has not permission
+        `);
+
+    permission.isAllow = isAllow;
+
+    return this.permissionRepository.save(permission);
+  }
+}

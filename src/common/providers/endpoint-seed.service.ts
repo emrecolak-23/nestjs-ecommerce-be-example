@@ -56,50 +56,103 @@ export class EndpointSeedService implements OnApplicationBootstrap {
           !existingEndpoints.some((ep) => ep.url === route.path && ep.method === route.method),
       );
 
-      if (newRoutes.length === 0) {
-        this.logger.log('✅ Database is already synchronized');
-        await queryRunner.commitTransaction();
-        return { added: 0, message: 'No changes needed' };
+      if (newRoutes.length > 0) {
+        this.logger.log(`➕ Found ${newRoutes.length} new endpoints to add:`);
+        newRoutes.forEach((route) => {
+          this.logger.log(`   • ${route.method.padEnd(7)} ${route.path}`);
+        });
+
+        const insertedResult = await queryRunner.manager
+          .createQueryBuilder()
+          .insert()
+          .into(Endpoint)
+          .values(newRoutes.map((r) => ({ url: r.path, method: r.method })))
+          .returning('*')
+          .execute();
+
+        const roles = await queryRunner.manager.find(Role, {
+          where: { isActive: true },
+        });
+
+        this.logger.log(`👥 Creating permissions for ${roles.length} roles`);
+
+        const permissionsToInsert: { endpointId: number; roleName: string; isAllow: boolean }[] =
+          [];
+        for (const role of roles) {
+          for (const endpoint of insertedResult.generatedMaps) {
+            const defaultAllow = this.getDefaultPermission(
+              role.name,
+              endpoint.url,
+              endpoint.method,
+            );
+
+            permissionsToInsert.push({
+              endpointId: endpoint.id,
+              roleName: role.name,
+              isAllow: defaultAllow,
+            });
+          }
+        }
+
+        if (permissionsToInsert.length > 0) {
+          await queryRunner.manager
+            .createQueryBuilder()
+            .insert()
+            .into(Permission)
+            .values(permissionsToInsert)
+            .orIgnore()
+            .execute();
+        }
+
+        this.logger.log(`✅ Added ${newRoutes.length} endpoints`);
+        this.logger.log(`✅ Created ${permissionsToInsert.length} permissions`);
       }
 
-      this.logger.log(`➕ Found ${newRoutes.length} new endpoints to add:`);
-      newRoutes.forEach((route) => {
-        this.logger.log(`   • ${route.method.padEnd(7)} ${route.path}`);
-      });
-
-      const insertedResult = await queryRunner.manager
-        .createQueryBuilder()
-        .insert()
-        .into(Endpoint)
-        .values(newRoutes.map((r) => ({ url: r.path, method: r.method })))
-        .returning('*')
-        .execute();
-
-      const roles = await queryRunner.manager.find(Role, {
+      const allEndpoints = await queryRunner.manager.find(Endpoint);
+      const allRoles = await queryRunner.manager.find(Role, {
         where: { isActive: true },
       });
 
-      this.logger.log(`👥 Creating permissions for ${roles.length} roles`);
+      this.logger.log('🔍 Checking for missing permissions...');
 
-      const permissionsToInsert: { endpointId: number; roleName: string; isAllow: boolean }[] = [];
-      for (const role of roles) {
-        for (const endpoint of insertedResult.generatedMaps) {
-          permissionsToInsert.push({
-            endpointId: endpoint.id,
-            roleName: role.name,
-            isAllow: false,
+      let missingPermissionsCount = 0;
+      for (const role of allRoles) {
+        for (const endpoint of allEndpoints) {
+          const existingPermission = await queryRunner.manager.findOne(Permission, {
+            where: {
+              roleName: role.name,
+              endpointId: endpoint.id,
+            },
           });
+
+          if (!existingPermission) {
+            const defaultAllow = this.getDefaultPermission(
+              role.name,
+              endpoint.url,
+              endpoint.method,
+            );
+
+            await queryRunner.manager
+              .createQueryBuilder()
+              .insert()
+              .into(Permission)
+              .values({
+                endpointId: endpoint.id,
+                roleName: role.name,
+                isAllow: defaultAllow,
+              })
+              .orIgnore()
+              .execute();
+
+            missingPermissionsCount++;
+          }
         }
       }
 
-      if (permissionsToInsert.length > 0) {
-        await queryRunner.manager
-          .createQueryBuilder()
-          .insert()
-          .into(Permission)
-          .values(permissionsToInsert)
-          .orIgnore()
-          .execute();
+      if (missingPermissionsCount > 0) {
+        this.logger.log(`✅ Created ${missingPermissionsCount} missing permissions`);
+      } else {
+        this.logger.log('✅ No missing permissions found');
       }
 
       await queryRunner.commitTransaction();
@@ -109,17 +162,16 @@ export class EndpointSeedService implements OnApplicationBootstrap {
       this.logger.log('✅ Synchronization completed successfully');
       this.logger.log(`📊 Summary:`);
       this.logger.log(`   • Endpoints added: ${newRoutes.length}`);
-      this.logger.log(`   • Permissions created: ${permissionsToInsert.length}`);
-      this.logger.log(`   • Total endpoints: ${existingEndpoints.length + newRoutes.length}`);
+      this.logger.log(`   • Missing permissions created: ${missingPermissionsCount}`);
+      this.logger.log(`   • Total endpoints: ${allEndpoints.length}`);
       this.logger.log(`   • Duration: ${duration}ms`);
 
       return {
         success: true,
-        added: newRoutes.length,
-        permissionsCreated: permissionsToInsert.length,
-        total: existingEndpoints.length + newRoutes.length,
+        endpointsAdded: newRoutes.length,
+        permissionsCreated: missingPermissionsCount,
+        total: allEndpoints.length,
         duration,
-        newEndpoints: newRoutes.map((r) => `${r.method} ${r.path}`),
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -128,5 +180,19 @@ export class EndpointSeedService implements OnApplicationBootstrap {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  private getDefaultPermission(roleName: string, url: string, method: string): boolean {
+    if (roleName === 'admin') {
+      return true;
+    }
+
+    if (roleName === 'user') {
+      if (method === 'GET') {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
