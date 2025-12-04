@@ -1,11 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import slugify from 'slugify';
+import { AfterUpdate, BeforeInsert, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   name: string;
 
   @Column()
@@ -13,4 +16,13 @@ export class Category {
 
   @Column()
   slug: string;
+
+  @BeforeInsert()
+  @AfterUpdate()
+  generateSlug() {
+    this.slug = slugify(this.name, {
+      strict: true,
+      lower: true,
+    });
+  }
 }
