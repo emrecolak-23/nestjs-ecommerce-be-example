@@ -35,12 +35,14 @@ async function bootstrap() {
   const endpointService = app.get(EndpointService);
   const routes = endpointService.getAllRoutes();
   const dataSource = app.get(DataSource);
-
+  const queryRunner = dataSource.createQueryRunner();
   try {
-    await dataSource.query('TRUNCATE endpoint RESTART IDENTITY CASCADE');
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    await queryRunner.query('TRUNCATE endpoint RESTART IDENTITY CASCADE');
 
     for (const route of routes) {
-      await dataSource
+      await queryRunner.manager
         .createQueryBuilder()
         .insert()
         .into(Endpoint)
@@ -49,8 +51,12 @@ async function bootstrap() {
     }
 
     console.log('Endpoint table truncated successfully');
+    await queryRunner.commitTransaction();
   } catch (err) {
     console.log('Failed to truncate endpoint table', err);
+    await queryRunner.rollbackTransaction();
+  } finally {
+    await queryRunner.release();
   }
 
   Logger.log(`Application is running on: http://localhost:${PORT}`);
