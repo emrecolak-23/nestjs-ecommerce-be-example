@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Permission } from 'src/permissions/entities/permission.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -12,4 +13,7 @@ export class Endpoint {
 
   @Column()
   method: HttpMethod;
+
+  @OneToMany(() => Permission, (permission) => permission.endpoint)
+  permissions: Permission[];
 }

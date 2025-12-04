@@ -12,6 +12,8 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './common';
 import { RoleModule } from './role/role.module';
 import { EndpointModule } from './endpoint/endpoint.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { Permission } from './permissions/entities/permission.entity';
 
 @Module({
   imports: [
@@ -61,7 +63,7 @@ import { EndpointModule } from './endpoint/endpoint.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Role, Endpoint],
+        entities: [User, Role, Endpoint, Permission],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -70,6 +72,7 @@ import { EndpointModule } from './endpoint/endpoint.module';
     AuthModule,
     RoleModule,
     EndpointModule,
+    PermissionsModule,
   ],
   controllers: [],
   providers: [
