@@ -9,6 +9,8 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { createDocument } from './swagger/swagger';
 import { EndpointService } from './endpoint/endpoint.service';
 import { Endpoint } from './endpoint/entities/endpoint.entity';
+import { Role } from './role/entities/role.entity';
+import { Permission } from './permissions/entities/permission.entity';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,33 +33,6 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT');
   await app.listen(PORT!);
-
-  const endpointService = app.get(EndpointService);
-  const routes = endpointService.getAllRoutes();
-  const dataSource = app.get(DataSource);
-  const queryRunner = dataSource.createQueryRunner();
-  try {
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    await queryRunner.query('TRUNCATE endpoint RESTART IDENTITY CASCADE');
-
-    for (const route of routes) {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .insert()
-        .into(Endpoint)
-        .values({ url: route.path, method: route.method })
-        .execute();
-    }
-
-    console.log('Endpoint table truncated successfully');
-    await queryRunner.commitTransaction();
-  } catch (err) {
-    console.log('Failed to truncate endpoint table', err);
-    await queryRunner.rollbackTransaction();
-  } finally {
-    await queryRunner.release();
-  }
 
   Logger.log(`Application is running on: http://localhost:${PORT}`);
 }

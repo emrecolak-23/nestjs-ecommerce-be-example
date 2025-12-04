@@ -14,6 +14,7 @@ import { RoleModule } from './role/role.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { Permission } from './permissions/entities/permission.entity';
+import { EndpointSeedService } from './common';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { Permission } from './permissions/entities/permission.entity';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    EndpointSeedService,
   ],
 })
 export class AppModule {}

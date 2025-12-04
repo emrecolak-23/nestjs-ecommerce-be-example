@@ -25,6 +25,6 @@ export class Permission {
   @JoinColumn({ name: 'endpointId' })
   endpoint: Endpoint;
 
-  @Column()
+  @Column({ default: false })
   isAllow: boolean;
 }
