@@ -98,6 +98,7 @@ export class EndpointSeedService implements OnApplicationBootstrap {
           await queryRunner.manager
             .createQueryBuilder()
             .insert()
+
             .into(Permission)
             .values(permissionsToInsert)
             .orIgnore()

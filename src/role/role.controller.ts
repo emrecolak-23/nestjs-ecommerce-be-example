@@ -2,7 +2,9 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from 
 import { RoleService } from './role.service';
 import { CreateRoleDto, ResponseRoleDto, UpdateRoleDto } from './dto';
 import { Public, TransformDTO } from 'src/common';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Roles')
 @Controller('role')
 @TransformDTO(ResponseRoleDto)
 export class RoleController {

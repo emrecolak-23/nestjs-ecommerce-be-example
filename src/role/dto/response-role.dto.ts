@@ -1,10 +1,12 @@
-import { Expose } from "class-transformer";
+import { Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ResponseRoleDto {
+  @ApiProperty()
+  @Expose()
+  name: string;
 
-    @Expose()
-    name: string;
-
-    @Expose()
-    description: string
+  @ApiProperty()
+  @Expose()
+  description: string;
 }

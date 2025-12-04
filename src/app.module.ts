@@ -15,6 +15,8 @@ import { EndpointModule } from './endpoint/endpoint.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { Permission } from './permissions/entities/permission.entity';
 import { EndpointSeedService } from './common';
+import { CategoryModule } from './category/category.module';
+import { Category } from './category/entities/category.entity';
 
 @Module({
   imports: [
@@ -64,7 +66,7 @@ import { EndpointSeedService } from './common';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Role, Endpoint, Permission],
+        entities: [User, Role, Endpoint, Permission, Category],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -74,6 +76,7 @@ import { EndpointSeedService } from './common';
     RoleModule,
     EndpointModule,
     PermissionsModule,
+    CategoryModule,
   ],
   controllers: [],
   providers: [

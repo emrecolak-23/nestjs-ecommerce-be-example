@@ -2,9 +2,9 @@ import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { EndpointService } from './endpoint.service';
 import { CreateEndpointDto } from './dto';
 import { HttpAdapterHost } from '@nestjs/core';
-import { httpMethods } from './dto';
-import { Public } from 'src/common';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Endpoints')
 @Controller('endpoint')
 export class EndpointController {
   constructor(
