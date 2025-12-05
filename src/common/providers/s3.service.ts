@@ -46,7 +46,7 @@ export class S3Service {
         ContentDisposition: contentDisposition,
       }),
     );
-    return `${this.configService.get('AWS_S3_BUCKET_URL')}/${fileKey}`;
+    return fileKey;
   }
 
   async deleteFile(fileKey: string): Promise<void> {
