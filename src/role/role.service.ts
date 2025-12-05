@@ -11,7 +11,6 @@ export class RoleService {
   async createRole(createRoleDto: CreateRoleDto) {
     const role = this.roleRepository.create({
       ...createRoleDto,
-      isActive: true,
     });
 
     return this.roleRepository.save(role);
@@ -19,7 +18,7 @@ export class RoleService {
 
   async getRole(name: string) {
     const role = await this.roleRepository.findOne({
-      where: { name, isActive: true },
+      where: { name },
       relations: {
         users: true,
       },
@@ -30,9 +29,7 @@ export class RoleService {
   }
 
   async findAll() {
-    return await this.roleRepository.find({
-      where: { isActive: true },
-    });
+    return await this.roleRepository.find({});
   }
 
   async updateRole(name: string, updateRoleDto: UpdateRoleDto) {
@@ -46,7 +43,6 @@ export class RoleService {
 
     if (role.users?.length > 0) throw new BadRequestException(`Cannot remove ${role.name} role`);
 
-    role.isActive = false;
-    return this.roleRepository.save(role);
+    return this.roleRepository.softRemove(role);
   }
 }

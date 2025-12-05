@@ -70,9 +70,7 @@ export class EndpointSeedService implements OnApplicationBootstrap {
           .returning('*')
           .execute();
 
-        const roles = await queryRunner.manager.find(Role, {
-          where: { isActive: true },
-        });
+        const roles = await queryRunner.manager.find(Role, {});
 
         this.logger.log(`👥 Creating permissions for ${roles.length} roles`);
 
@@ -110,9 +108,7 @@ export class EndpointSeedService implements OnApplicationBootstrap {
       }
 
       const allEndpoints = await queryRunner.manager.find(Endpoint);
-      const allRoles = await queryRunner.manager.find(Role, {
-        where: { isActive: true },
-      });
+      const allRoles = await queryRunner.manager.find(Role, {});
 
       this.logger.log('🔍 Checking for missing permissions...');
 
