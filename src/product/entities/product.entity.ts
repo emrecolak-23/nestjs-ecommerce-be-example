@@ -18,7 +18,7 @@ export class Product {
   name: string;
 
   @Column({ type: 'varchar', length: 255 })
-  shorDescription: string;
+  shortDescription: string;
 
   @Column({ type: 'text', nullable: true })
   longDescription: string;
@@ -36,7 +36,7 @@ export class Product {
   slug: string;
 
   @ManyToOne(() => Category, (c) => c.products)
-  category: Category[];
+  category: Category;
 
   @BeforeInsert()
   @AfterUpdate()

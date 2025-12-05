@@ -10,7 +10,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CreateCategoryDto,
   ResponseCategoryDto,
@@ -32,7 +32,8 @@ export class CategoryController {
 
   @Post('/')
   @ResponseMessage('Category created successfully')
-  @ApiOkResponse({
+  @ApiResponse({
+    status: HttpStatus.CREATED,
     type: createApiResponseDto(ResponseCategoryDto),
     description: 'Category created successfully',
   })
