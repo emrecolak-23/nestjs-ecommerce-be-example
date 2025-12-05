@@ -6,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -26,8 +27,11 @@ export class Category {
   @DeleteDateColumn()
   deletedDate: Date;
 
-  @ManyToOne(() => Category, (c) => c.parent)
+  @ManyToOne(() => Category, (c) => c.children)
   parent: Category | null;
+
+  @OneToMany(() => Category, (c) => c.parent)
+  children: Category[];
 
   @Column()
   description: string;

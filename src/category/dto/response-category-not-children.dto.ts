@@ -1,8 +1,7 @@
-import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { Category } from '../entities/category.entity';
+import { Expose } from 'class-transformer';
 
-export class ResponseCategoryDto {
+export class ResponseCategoryNotChildrenDto {
   @ApiProperty()
   @Expose()
   id: number;
@@ -18,8 +17,4 @@ export class ResponseCategoryDto {
   @ApiProperty()
   @Expose()
   slug: string;
-
-  @Expose()
-  @Type(() => ResponseCategoryDto)
-  children: ResponseCategoryDto[];
 }

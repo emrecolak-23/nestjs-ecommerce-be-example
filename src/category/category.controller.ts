@@ -11,7 +11,12 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CreateCategoryDto, ResponseCategoryDto, UpdateCategoryDto } from './dto';
+import {
+  CreateCategoryDto,
+  ResponseCategoryDto,
+  ResponseCategoryNotChildrenDto,
+  UpdateCategoryDto,
+} from './dto';
 import {
   createApiResponseDto,
   createApiResponseArrayDto,
@@ -55,9 +60,10 @@ export class CategoryController {
   }
 
   @Patch('/:id')
+  @TransformDTO(ResponseCategoryNotChildrenDto)
   @ResponseMessage('Category updated successfully')
   @ApiOkResponse({
-    type: createApiResponseDto(ResponseCategoryDto),
+    type: createApiResponseDto(ResponseCategoryNotChildrenDto),
     description: 'Category updated successfully',
   })
   updateOne(@Param('id', ParseIntPipe) id: number, @Body() updateCategoryDto: UpdateCategoryDto) {
