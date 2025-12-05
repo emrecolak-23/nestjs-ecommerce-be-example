@@ -1,5 +1,13 @@
 import slugify from 'slugify';
-import { AfterUpdate, BeforeInsert, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  AfterUpdate,
+  BeforeInsert,
+  Column,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity()
 export class Category {
@@ -10,6 +18,12 @@ export class Category {
     unique: true,
   })
   name: string;
+
+  //   @Column({ default: true })
+  //   isActive: boolean;
+
+  @DeleteDateColumn()
+  deletedDate: Date;
 
   @Column()
   description: string;

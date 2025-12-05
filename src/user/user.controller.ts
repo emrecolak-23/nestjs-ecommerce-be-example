@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ResponseUserDto } from './dto';
-import { CurrentUser, Public, TransformDTO } from 'src/common';
+import { CurrentUser, Public, TransformDTO, createApiResponseDto } from 'src/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users')
@@ -13,7 +13,7 @@ export class UserController {
   @Post('/create')
   @Public()
   @ApiOkResponse({
-    type: ResponseUserDto,
+    type: createApiResponseDto(ResponseUserDto),
     description: 'User created successfully',
   })
   async createUser(@Body() createUserDto: CreateUserDto) {
@@ -22,7 +22,7 @@ export class UserController {
 
   @Get('me')
   @ApiOkResponse({
-    type: ResponseUserDto,
+    type: createApiResponseDto(ResponseUserDto),
     description: 'Current user information',
   })
   async currentUser(@CurrentUser('id') userId: number) {

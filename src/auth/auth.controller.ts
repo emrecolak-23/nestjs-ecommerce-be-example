@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { HttpCode } from '@nestjs/common';
-import { ResponseMessage } from 'src/common';
+import { ResponseMessage, createApiResponseDto } from 'src/common';
 import { Public } from 'src/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -17,7 +17,7 @@ export class AuthController {
   @Public()
   @ResponseMessage('User registered successfully')
   @ApiOkResponse({
-    type: AuthResponseDto,
+    type: createApiResponseDto(AuthResponseDto),
     description: 'User registered successfully',
   })
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -29,7 +29,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('User login successfully')
   @ApiOkResponse({
-    type: AuthResponseDto,
+    type: createApiResponseDto(AuthResponseDto),
     description: 'User logged in successfully',
   })
   async signIn(@Body() signInDto: SignInDto) {

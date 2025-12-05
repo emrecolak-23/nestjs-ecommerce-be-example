@@ -1,8 +1,23 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateCategoryDto, ResponseCategoryDto } from './dto';
-import { ResponseMessage, TransformDTO } from 'src/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { CreateCategoryDto, ResponseCategoryDto, UpdateCategoryDto } from './dto';
+import {
+  createApiResponseDto,
+  createApiResponseArrayDto,
+  ResponseMessage,
+  TransformDTO,
+} from 'src/common';
 
 @ApiTags('Category')
 @TransformDTO(ResponseCategoryDto)
@@ -12,9 +27,9 @@ export class CategoryController {
 
   @Post('/')
   @ResponseMessage('Category created successfully')
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    type: ResponseCategoryDto,
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseCategoryDto),
+    description: 'Category created successfully',
   })
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
@@ -22,20 +37,36 @@ export class CategoryController {
 
   @Get('/')
   @ResponseMessage('Get all category')
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: [ResponseCategoryDto],
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseCategoryDto),
+    description: 'List of all categories',
   })
   findAll() {
     return this.categoryService.findAll();
   }
 
   @Get('/:id')
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: ResponseCategoryDto,
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseCategoryDto),
+    description: 'Category found',
   })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.findOne(id);
+  }
+
+  @Patch('/:id')
+  @ResponseMessage('Category updated successfully')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseCategoryDto),
+    description: 'Category updated successfully',
+  })
+  updateOne(@Param('id', ParseIntPipe) id: number, @Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoryService.updateOne(id, updateCategoryDto);
+  }
+
+  @Delete('/:id')
+  @ResponseMessage('Category deleted successfully')
+  deleteOne(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.deleteOne(id);
   }
 }
