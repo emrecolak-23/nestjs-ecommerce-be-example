@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -17,6 +18,8 @@ import {
 } from 'src/common';
 import { CreateProductDto, ResponseProductDto, UpdateProductDto } from './dto';
 import { ApiOkResponse, ApiResponse } from '@nestjs/swagger';
+import { Paginate } from 'nestjs-paginate';
+import type { PaginateQuery } from 'nestjs-paginate';
 
 @TransformDTO(ResponseProductDto)
 @Controller('products')
@@ -36,8 +39,8 @@ export class ProductController {
   @ApiOkResponse({
     type: createApiResponseArrayDto(ResponseProductDto),
   })
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Paginate() query: PaginateQuery) {
+    return this.productService.findAll(query);
   }
 
   @Get('slug/:slug')
@@ -63,5 +66,13 @@ export class ProductController {
   })
   updateOne(@Param('id', ParseIntPipe) id: number, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.updateOne(id, updateProductDto);
+  }
+
+  @Delete('/:id')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseProductDto),
+  })
+  deleteOne(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.deleteOne(id);
   }
 }

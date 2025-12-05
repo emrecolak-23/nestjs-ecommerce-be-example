@@ -23,6 +23,19 @@ export class TransformDtoInterceptor<T> implements NestInterceptor {
   ): Observable<any> | Promise<Observable<any>> {
     return next.handle().pipe(
       map((data) => {
+        if (data && data.data) {
+          return {
+            // Paginated
+            data: plainToInstance(this.dtoClass, data.data, {
+              excludeExtraneousValues: true,
+              enableImplicitConversion: true,
+            }),
+            meta: {
+              ...data.meta,
+            },
+          };
+        }
+
         return plainToInstance(this.dtoClass, data, {
           excludeExtraneousValues: true,
           enableImplicitConversion: true,

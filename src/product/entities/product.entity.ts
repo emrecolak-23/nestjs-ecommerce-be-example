@@ -4,6 +4,7 @@ import {
   AfterUpdate,
   BeforeInsert,
   Column,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -37,6 +38,9 @@ export class Product {
 
   @ManyToOne(() => Category, (c) => c.products)
   category: Category;
+
+  @DeleteDateColumn()
+  deletedDate: Date;
 
   @BeforeInsert()
   @AfterUpdate()

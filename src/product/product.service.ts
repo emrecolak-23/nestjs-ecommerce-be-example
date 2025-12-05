@@ -4,6 +4,14 @@ import { Product } from './entities/product.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { CategoryService } from 'src/category/category.service';
+import {
+  FilterOperator,
+  FilterSuffix,
+  Paginate,
+  PaginateQuery,
+  paginate,
+  Paginated,
+} from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
@@ -21,8 +29,23 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  async findAll() {
-    const products = await this.productRepository.find({});
+  //   async findAll() {
+  //     const products = await this.productRepository.find({});
+  //     return products;
+  //   }
+
+  async findAll(query: PaginateQuery): Promise<Paginated<Product>> {
+    const products = paginate(query, this.productRepository, {
+      sortableColumns: ['id', 'name', 'price'],
+      defaultSortBy: [['price', 'DESC']],
+      searchableColumns: ['name', 'longDescription', 'shortDescription'],
+      filterableColumns: {
+        name: [FilterOperator.ILIKE, FilterSuffix.NOT],
+        shortDescription: [FilterOperator.ILIKE, FilterSuffix.NOT],
+        longDescription: [FilterOperator.ILIKE, FilterSuffix.NOT],
+      },
+    });
+
     return products;
   }
 
@@ -55,5 +78,11 @@ export class ProductService {
     Object.assign(product, updateProductDto);
 
     return this.productRepository.save(product);
+  }
+
+  async deleteOne(id: number) {
+    const product = await this.findOneById(id);
+
+    return this.productRepository.softRemove(product);
   }
 }
