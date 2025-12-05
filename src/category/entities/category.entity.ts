@@ -5,6 +5,7 @@ import {
   Column,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -24,6 +25,9 @@ export class Category {
 
   @DeleteDateColumn()
   deletedDate: Date;
+
+  @ManyToOne(() => Category, (c) => c.parent)
+  parent: Category | null;
 
   @Column()
   description: string;

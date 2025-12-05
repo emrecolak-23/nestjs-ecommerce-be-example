@@ -8,8 +8,17 @@ import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 export class CategoryService {
   constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    const category = this.categoryRepository.create(createCategoryDto);
+  async create(createCategoryDto: CreateCategoryDto) {
+    const parentCategory = createCategoryDto.parentId
+      ? await this.categoryRepository.findOne({
+          where: { id: createCategoryDto.parentId },
+        })
+      : null;
+
+    const category = new Category();
+    category.parent = parentCategory ? parentCategory : null;
+    Object.assign(category, createCategoryDto);
+
     return this.categoryRepository.save(category);
   }
 
