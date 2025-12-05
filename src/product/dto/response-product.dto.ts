@@ -1,5 +1,6 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ResponseCategoryDto } from 'src/category/dto';
+import { Product } from '../entities/product.entity';
 
 export class ResponseProductDto {
   @Expose()
@@ -27,6 +28,6 @@ export class ResponseProductDto {
   categoryId: number;
 
   @Expose()
-  @Type(() => ResponseCategoryDto)
-  category: ResponseCategoryDto;
+  @Transform(({ obj }: { obj: Product }) => obj.category.name)
+  category: string;
 }
