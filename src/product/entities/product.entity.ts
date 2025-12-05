@@ -24,6 +24,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   longDescription: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  image: string;
+
   @Column({ type: 'numeric', precision: 6, scale: 2 })
   price: number;
 
