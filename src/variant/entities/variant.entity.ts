@@ -1,5 +1,6 @@
 import { Product } from 'src/product/entities/product.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { VariantItems } from 'src/variant-items/entities/variant-items.entity';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Variant {
@@ -11,4 +12,7 @@ export class Variant {
 
   @ManyToOne(() => Product, (p) => p.variants)
   product: Product;
+
+  @OneToMany(() => VariantItems, (item) => item.variant)
+  items: VariantItems[];
 }
