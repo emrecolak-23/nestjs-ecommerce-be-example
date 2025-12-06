@@ -1,8 +1,7 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { ResponseProductDto } from 'src/product/dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { Product } from 'src/product/entities/product.entity';
 import { Variant } from '../entities/variant.entity';
+import { ResponseVariantItemDto } from 'src/variant-items/dto';
 
 export class ResponseVariantDto {
   @ApiProperty()
@@ -21,4 +20,9 @@ export class ResponseVariantDto {
   @Transform(({ obj }: { obj: Variant }) => obj?.product?.name)
   @Expose()
   product: string;
+
+  @ApiProperty()
+  @Type(() => ResponseVariantItemDto)
+  @Expose()
+  items: ResponseVariantItemDto[];
 }

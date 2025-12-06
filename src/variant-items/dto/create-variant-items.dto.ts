@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateVariantItemDto {
@@ -11,4 +11,9 @@ export class CreateVariantItemDto {
   @IsInt()
   @IsNotEmpty()
   variantId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  price: number;
 }

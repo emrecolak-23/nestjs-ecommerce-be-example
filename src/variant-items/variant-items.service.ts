@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VariantItems } from './entities/variant-items.entity';
 import { Repository } from 'typeorm';
@@ -36,5 +36,24 @@ export class VariantItemsService {
     });
 
     return variantItems;
+  }
+
+  async findOne(variantItemId: number) {
+    const variantItem = await this.variantItemsRepository.findOne({
+      where: { id: variantItemId },
+      relations: {
+        variant: true,
+      },
+    });
+
+    if (!variantItem) throw new NotFoundException('Variant item not found');
+
+    return variantItem;
+  }
+
+  async remove(variantItemId: number) {
+    const variantItem = await this.findOne(variantItemId);
+
+    return this.variantItemsRepository.remove(variantItem);
   }
 }

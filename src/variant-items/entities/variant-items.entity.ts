@@ -9,6 +9,11 @@ export class VariantItems {
   @Column({ type: 'varchar', length: 20 })
   value: string;
 
-  @ManyToOne(() => Variant, (v) => v.items)
+  @Column({ type: 'decimal', precision: 4, scale: 2 })
+  price: number;
+
+  @ManyToOne(() => Variant, (v) => v.items, {
+    onDelete: 'CASCADE',
+  })
   variant: Variant;
 }

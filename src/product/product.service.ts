@@ -49,6 +49,11 @@ export class ProductService {
   async findOne(filterQuery: FindOptionsWhere<Product>) {
     const product = await this.productRepository.findOne({
       where: filterQuery,
+      relations: {
+        variants: {
+          items: true,
+        },
+      },
     });
     if (!product) throw new NotFoundException('Product not found');
 

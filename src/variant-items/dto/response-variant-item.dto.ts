@@ -13,6 +13,10 @@ export class ResponseVariantItemDto {
 
   @ApiProperty()
   @Expose()
+  price: number;
+
+  @ApiProperty()
+  @Expose()
   variantId: number;
 
   @ApiProperty()

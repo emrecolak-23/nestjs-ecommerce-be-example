@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { VariantItemsService } from './variant-items.service';
 import { CreateVariantItemDto, ResponseVariantItemDto } from './dto';
 import { createApiResponseArrayDto, createApiResponseDto, TransformDTO } from 'src/common';
@@ -24,5 +33,21 @@ export class VariantItemsController {
   })
   findAll(@Param('variantId', ParseIntPipe) variantId: number) {
     return this.variantItemsService.findAll(variantId);
+  }
+
+  @Get(':variantItemId')
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseVariantItemDto),
+  })
+  findOne(@Param('variantItemId', ParseIntPipe) variantItemId: number) {
+    return this.variantItemsService.findOne(variantItemId);
+  }
+
+  @Delete(':variantItemId')
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseVariantItemDto),
+  })
+  deleteOne(@Param('variantItemId', ParseIntPipe) variantItemId: number) {
+    return this.variantItemsService.remove(variantItemId);
   }
 }
