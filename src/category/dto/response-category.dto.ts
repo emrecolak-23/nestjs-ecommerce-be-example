@@ -19,6 +19,7 @@ export class ResponseCategoryDto {
   @Expose()
   slug: string;
 
+  @ApiProperty({ type: () => ResponseCategoryDto })
   @Expose()
   @Type(() => ResponseCategoryDto)
   children: ResponseCategoryDto[];
