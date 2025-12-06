@@ -7,6 +7,10 @@ import { Variant } from '../entities/variant.entity';
 export class ResponseVariantDto {
   @ApiProperty()
   @Expose()
+  id: number;
+
+  @ApiProperty()
+  @Expose()
   name: string;
 
   @ApiProperty()
@@ -14,7 +18,7 @@ export class ResponseVariantDto {
   productId: number;
 
   @ApiProperty()
-  @Transform(({ obj }: { obj: Variant }) => obj?.product.name)
+  @Transform(({ obj }: { obj: Variant }) => obj?.product?.name)
   @Expose()
   product: string;
 }
