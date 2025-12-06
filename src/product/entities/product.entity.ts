@@ -1,6 +1,7 @@
 import slugify from 'slugify';
 import { Category } from 'src/category/entities/category.entity';
 import { ProductGallery } from 'src/product-galleries/entities/product-gallery.entity';
+import { Variant } from 'src/variant/entities/variant.entity';
 import {
   AfterUpdate,
   BeforeInsert,
@@ -37,6 +38,9 @@ export class Product {
 
   @OneToMany(() => ProductGallery, (pg) => pg.product)
   productGalleries: ProductGallery[];
+
+  @OneToMany(() => Variant, (v) => v.product)
+  variants: Variant[];
 
   @Column({ type: 'int' })
   quantity: number;
