@@ -8,22 +8,48 @@ import {
   ParseIntPipe,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { UploadService } from './upload.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadType } from './enums/upload-type.enum';
 import { FileTypeValidationPipe } from './pipes';
 import { ResponseMessage } from 'src/common';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { FilesUploadDto, FileUploadDto } from './dto';
+import { MAX_UPLOAD_MULTIPLE_FILE_COUNT } from './constants';
 
 @Controller('uploads')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Post(':type/:entityId')
+  @Post('product-gallery/:productId')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload type of contents',
+    type: FilesUploadDto,
+  })
+  @ResponseMessage('Upload files successfully')
+  @UseInterceptors(FilesInterceptor('files', MAX_UPLOAD_MULTIPLE_FILE_COUNT))
+  async uploadManyFiles(
+    @Param('productId', ParseIntPipe) productId: number,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    console.log(productId, 'productId');
+    await this.uploadService.uploadManyFiles(files, productId);
+    return;
+  }
+
+  @Post('file/:type/:entityId')
   @ResponseMessage('Upload file successfully')
   @UseInterceptors(FileInterceptor('file'))
-  uploadImage(
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload type of content',
+    type: FileUploadDto,
+  })
+  async uploadImage(
     @Param('type') type: UploadType,
     @Param('entityId', ParseIntPipe) entityId: number,
     @UploadedFile(
@@ -36,7 +62,7 @@ export class UploadController {
     )
     file: Express.Multer.File,
   ) {
-    this.uploadService.uploadFile(file, type, entityId);
+    await this.uploadService.uploadFile(file, type, entityId);
 
     return;
   }

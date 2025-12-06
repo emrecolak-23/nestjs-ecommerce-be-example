@@ -20,6 +20,8 @@ import { Category } from './category/entities/category.entity';
 import { ProductModule } from './product/product.module';
 import { Product } from './product/entities/product.entity';
 import { UploadModule } from './upload/upload.module';
+import { ProductGalleriesModule } from './product-galleries/product-galleries.module';
+import { ProductGallery } from './product-galleries/entities/product-gallery.entity';
 
 @Module({
   imports: [
@@ -69,7 +71,7 @@ import { UploadModule } from './upload/upload.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Role, Endpoint, Permission, Category, Product],
+        entities: [User, Role, Endpoint, Permission, Category, Product, ProductGallery],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -82,6 +84,7 @@ import { UploadModule } from './upload/upload.module';
     CategoryModule,
     ProductModule,
     UploadModule,
+    ProductGalleriesModule,
   ],
   controllers: [],
   providers: [

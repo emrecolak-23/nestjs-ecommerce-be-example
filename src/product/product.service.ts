@@ -50,7 +50,6 @@ export class ProductService {
     const product = await this.productRepository.findOne({
       where: filterQuery,
     });
-
     if (!product) throw new NotFoundException('Product not found');
 
     return product;

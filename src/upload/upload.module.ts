@@ -10,9 +10,15 @@ import { ProductService } from 'src/product/product.service';
 import { UserService } from 'src/user/user.service';
 import { ProductModule } from 'src/product/product.module';
 import { UserModule } from 'src/user/user.module';
+import { ProductGalleriesModule } from 'src/product-galleries/product-galleries.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Product]), ProductModule, UserModule],
+  imports: [
+    TypeOrmModule.forFeature([User, Product]),
+    ProductModule,
+    UserModule,
+    ProductGalleriesModule,
+  ],
   controllers: [UploadController],
   providers: [UploadService, S3Service],
 })
@@ -20,6 +26,6 @@ export class UploadModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ValidateFileTypeMiddleware)
-      .forRoutes({ path: 'uploads/:type/:entityId', method: RequestMethod.POST });
+      .forRoutes({ path: 'uploads/file/:type/:entityId', method: RequestMethod.POST });
   }
 }

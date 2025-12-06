@@ -8,3 +8,5 @@ export const MIME_TYPES = [
   'image/webp',
   'image/svg+xml',
 ];
+
+export const MAX_UPLOAD_MULTIPLE_FILE_COUNT = 5;
