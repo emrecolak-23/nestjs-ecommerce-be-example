@@ -1,18 +1,21 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, ResponseUserDto } from './dto';
+import { CreateUserDto, ResponseUserDto, UpdateUserDto } from './dto';
 import {
   CurrentUser,
   Public,
+  ResponseMessage,
   TransformDTO,
   createApiResponseArrayDto,
   createApiResponseDto,
@@ -60,5 +63,25 @@ export class UserController {
   })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOneById(id);
+  }
+
+  @Patch('/:id')
+  @ResponseMessage('User updated successfully')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseUserDto),
+    description: 'One user information',
+  })
+  async updateOne(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateOne(id, updateUserDto);
+  }
+
+  @Delete('/:id')
+  @ResponseMessage('User updated successfully')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseUserDto),
+    description: 'One user information',
+  })
+  async deleteOne(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.deleteOne(id);
   }
 }
