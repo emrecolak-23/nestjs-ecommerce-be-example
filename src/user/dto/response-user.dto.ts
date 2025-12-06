@@ -1,6 +1,7 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { ResponseRoleDto } from 'src/role/dto';
+import { User } from '../entities/user.entity';
 
 export class ResponseUserDto {
   @ApiProperty({ example: 1 })
@@ -23,8 +24,8 @@ export class ResponseUserDto {
   @Expose()
   isActive: boolean;
 
-  @ApiProperty({ type: () => ResponseRoleDto })
+  @ApiProperty()
   @Expose()
-  @Type(() => ResponseRoleDto)
-  role: ResponseRoleDto;
+  @Transform(({ obj }: { obj: User }) => obj.role.name)
+  role: string;
 }

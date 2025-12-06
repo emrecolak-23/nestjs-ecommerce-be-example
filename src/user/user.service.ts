@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateUserDto } from './dto';
 import { plainToInstance } from 'class-transformer';
 import { RoleService } from 'src/role/role.service';
@@ -23,11 +23,33 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  async findOne(filterQuery: FindOptionsWhere<User>) {
+    const user = this.userRepository.findOne({
+      where: filterQuery,
+      relations: {
+        role: true,
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
+  }
+
   findOneByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    return this.findOne({ email });
   }
 
   findOneById(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+    return this.findOne({ id });
+  }
+
+  findAll() {
+    return this.userRepository.find({
+      where: { isActive: true },
+      relations: {
+        role: true,
+      },
+    });
   }
 }

@@ -1,7 +1,22 @@
-import { Body, Controller, Get, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ResponseUserDto } from './dto';
-import { CurrentUser, Public, TransformDTO, createApiResponseDto } from 'src/common';
+import {
+  CurrentUser,
+  Public,
+  TransformDTO,
+  createApiResponseArrayDto,
+  createApiResponseDto,
+} from 'src/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users')
@@ -27,5 +42,23 @@ export class UserController {
   })
   async currentUser(@CurrentUser('id') userId: number) {
     return this.userService.findOneById(userId);
+  }
+
+  @Get('/')
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseUserDto),
+    description: 'All users information',
+  })
+  async findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get('/:id')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseUserDto),
+    description: 'One user information',
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findOneById(id);
   }
 }
