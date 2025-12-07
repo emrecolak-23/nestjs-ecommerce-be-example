@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
 import { Repository } from 'typeorm';
 import { CartItem } from './entities/cart-item.entity';
-import { AddToCartDto, CreateCartDto } from './dto';
+import { AddToCartDto, CreateCartDto, UpdateCartItemQuantityDto } from './dto';
 import { User } from 'src/user/entities/user.entity';
 import { ProductService } from 'src/product/product.service';
 import { UserService } from 'src/user/user.service';
@@ -96,6 +96,33 @@ export class CartService {
       await this.cartItemRepository.save(cartItem);
     }
 
+    await this.reCalculateCartTotalPrice(userId);
+  }
+
+  async updateQuantity(
+    userId: number,
+    cartItemId: number,
+    updateCartItemDto: UpdateCartItemQuantityDto,
+  ) {
+    if (updateCartItemDto.quantity === 0) {
+      await this.removeItemFromCart(userId, cartItemId);
+      return;
+    }
+
+    const cartItem = await this.findOneCartItem(cartItemId);
+    const cart = await this.findCartByUserId(userId);
+
+    if (cartItem.cart.id !== cart.id)
+      throw new UnauthorizedException('You can not update this cart item');
+
+    cartItem.quantity = updateCartItemDto.quantity;
+    cartItem.totalPrice =
+      parseFloat(`${cartItem.price}`) * updateCartItemDto.quantity +
+      JSON.parse(cartItem.variant).price * updateCartItemDto.quantity;
+
+    console.log(cartItem, 'cartItem');
+
+    await this.cartItemRepository.save(cartItem);
     await this.reCalculateCartTotalPrice(userId);
   }
 

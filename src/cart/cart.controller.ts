@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { createApiResponseDto, CurrentUser, ResponseMessage, TransformDTO } from 'src/common';
-import { AddToCartDto } from './dto';
+import { AddToCartDto, UpdateCartItemQuantityDto } from './dto';
 import { ResponseCartDto } from './dto/response-cart.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 
@@ -31,5 +31,14 @@ export class CartController {
     @CurrentUser('id') userId: number,
   ) {
     return this.cartService.removeItemFromCart(userId, cartItemId);
+  }
+
+  @Patch('items/:cartItemId')
+  updateCartItemQuantity(
+    @Param('cartItemId', ParseIntPipe) cartItemId: number,
+    @CurrentUser('id') userId: number,
+    @Body() updateCartItemQuantityDto: UpdateCartItemQuantityDto,
+  ) {
+    return this.cartService.updateQuantity(userId, cartItemId, updateCartItemQuantityDto);
   }
 }
