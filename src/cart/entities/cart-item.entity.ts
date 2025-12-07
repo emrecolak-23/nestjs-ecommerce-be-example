@@ -16,8 +16,11 @@ export class CartItem {
   @Column({ type: 'text' })
   variant: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  totalPrice: number;
+
   @ManyToOne(() => Product)
-  product: Product[];
+  product: Product;
 
   @ManyToOne(() => Cart, (cart) => cart.items)
   cart: Cart;

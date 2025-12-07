@@ -6,9 +6,10 @@ import { User } from './entities/user.entity';
 import { RoleService } from 'src/role/role.service';
 import { Role } from 'src/role/entities/role.entity';
 import { BcryptService } from 'src/auth/providers';
+import { CartModule } from 'src/cart/cart.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role])],
+  imports: [TypeOrmModule.forFeature([User, Role]), CartModule],
   controllers: [UserController],
   providers: [UserService, RoleService, BcryptService],
   exports: [UserService],

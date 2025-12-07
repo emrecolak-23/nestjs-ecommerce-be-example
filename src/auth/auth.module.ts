@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
+import { CartModule } from 'src/cart/cart.module';
 
 @Module({
   imports: [
@@ -18,11 +19,12 @@ import { RoleService } from 'src/role/role.service';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         global: true,
-        secret: configService.getOrThrow<string>("JWT_SECRET"),
-        signOptions: { expiresIn: configService.getOrThrow<number>("JWT_EXPIRES_IN") },
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: configService.getOrThrow<number>('JWT_EXPIRES_IN') },
       }),
-      inject: [ConfigService]
-    })
+      inject: [ConfigService],
+    }),
+    CartModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, BcryptService, UserService, TokenService, RoleService],

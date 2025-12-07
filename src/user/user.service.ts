@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { ChangePasswordDto, CreateUserDto, UpdateUserDto } from './dto';
 import { RoleService } from 'src/role/role.service';
 import { BcryptService } from 'src/auth/providers';
+import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class UserService {
@@ -12,6 +19,8 @@ export class UserService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly roleService: RoleService,
     private readonly bcryptService: BcryptService,
+    @Inject(forwardRef(() => CartService))
+    private readonly cartService: CartService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -21,7 +30,9 @@ export class UserService {
       password: createUserDto.password,
       role,
     });
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    await this.cartService.create(savedUser);
+    return savedUser;
   }
 
   async findOne(filterQuery: FindOptionsWhere<User>): Promise<User> {
@@ -38,7 +49,12 @@ export class UserService {
   }
 
   findOneByEmail(email: string) {
-    return this.findOne({ email });
+    return this.userRepository.findOne({
+      where: { email },
+      relations: {
+        role: true,
+      },
+    });
   }
 
   findOneById(id: number) {
