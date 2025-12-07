@@ -46,9 +46,6 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    if (!existingUser.isActive) {
-      throw new ForbiddenException('User account is inactive');
-    }
     const isPasswordValid = await this.bcryptService.compare(password!, existingUser.password);
     if (!isPasswordValid) {
       throw new ForbiddenException('Invalid credentials');

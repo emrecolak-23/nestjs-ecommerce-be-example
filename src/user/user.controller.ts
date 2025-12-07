@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, ResponseUserDto, UpdateUserDto } from './dto';
+import { ChangePasswordDto, CreateUserDto, ResponseUserDto, UpdateUserDto } from './dto';
 import {
   CurrentUser,
   Public,
@@ -21,6 +21,7 @@ import {
   createApiResponseDto,
 } from 'src/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { UserPayload } from 'src/auth/types';
 
 @ApiTags('Users')
 @Controller('users')
@@ -56,7 +57,28 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get('/:id')
+  @Patch('change-password')
+  @ResponseMessage('Password changed successfully')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseUserDto),
+  })
+  async changePassword(
+    @CurrentUser('id') userId: number,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.userService.changeMyPassword(userId, changePasswordDto);
+  }
+
+  @Patch('change-information')
+  @ResponseMessage('Password changed successfully')
+  @ApiOkResponse({
+    type: createApiResponseDto(ResponseUserDto),
+  })
+  async changeInformation(@CurrentUser('id') userId: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateOne(userId, updateUserDto);
+  }
+
+  @Get(':id')
   @ApiOkResponse({
     type: createApiResponseDto(ResponseUserDto),
     description: 'One user information',
@@ -65,7 +87,7 @@ export class UserController {
     return this.userService.findOneById(id);
   }
 
-  @Patch('/:id')
+  @Patch(':id')
   @ResponseMessage('User updated successfully')
   @ApiOkResponse({
     type: createApiResponseDto(ResponseUserDto),
@@ -75,8 +97,8 @@ export class UserController {
     return this.userService.updateOne(id, updateUserDto);
   }
 
-  @Delete('/:id')
-  @ResponseMessage('User updated successfully')
+  @Delete(':id')
+  @ResponseMessage('User deleted successfully')
   @ApiOkResponse({
     type: createApiResponseDto(ResponseUserDto),
     description: 'One user information',

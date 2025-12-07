@@ -1,31 +1,36 @@
-import { Exclude } from "class-transformer";
-import { Role } from "src/role/entities/role.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Exclude } from 'class-transformer';
+import { Role } from 'src/role/entities/role.entity';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity()
 export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @Column()
+  firstname: string;
 
-    @Column()
-    firstname: string
+  @Column()
+  lastname: string;
 
-    @Column()
-    lastname: string
+  @Column()
+  @Unique(['email'])
+  email: string;
 
-    @Column()
-    @Unique(['email'])
-    email: string
+  @Column()
+  @Exclude()
+  password: string;
 
-    @Column()
-    @Exclude()
-    password: string
+  @DeleteDateColumn()
+  deletedDate: Date;
 
-    @Column({ default: true })
-    isActive: boolean
-
-   
-    @ManyToOne(() => Role, (role) => role.users)
-    role: Role
+  @ManyToOne(() => Role, (role) => role.users)
+  role: Role;
 }

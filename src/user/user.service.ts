@@ -1,16 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { plainToInstance } from 'class-transformer';
+import { ChangePasswordDto, CreateUserDto, UpdateUserDto } from './dto';
 import { RoleService } from 'src/role/role.service';
+import { BcryptService } from 'src/auth/providers';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly roleService: RoleService,
+    private readonly bcryptService: BcryptService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -46,7 +47,6 @@ export class UserService {
 
   findAll() {
     return this.userRepository.find({
-      where: { isActive: true },
       relations: {
         role: true,
       },
@@ -65,7 +65,24 @@ export class UserService {
   async deleteOne(id: number) {
     const user = await this.findOneById(id);
 
-    user.isActive = false;
+    return this.userRepository.softRemove(user);
+  }
+
+  async changeMyPassword(id: number, changePasswordDto: ChangePasswordDto) {
+    if (changePasswordDto.newPassword !== changePasswordDto.confirmPassword)
+      throw new UnauthorizedException('Confirmed password invalid');
+
+    const user = await this.findOneById(id);
+
+    const isCurrentPasswordValid = await this.bcryptService.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+
+    if (!isCurrentPasswordValid) throw new UnauthorizedException('Current password mismatch');
+
+    const newHashedPassword = await this.bcryptService.hash(changePasswordDto.newPassword);
+    user.password = newHashedPassword;
 
     return this.userRepository.save(user);
   }
