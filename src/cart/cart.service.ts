@@ -52,9 +52,16 @@ export class CartService {
 
   async addItemToCart(userId: number, addToCartDto: AddToCartDto) {
     const { quantity, variantItemId, productId } = addToCartDto;
-    const product = await this.productService.findOneById(productId);
-    const cart = await this.findCartByUserId(userId);
-    const variantItem = await this.variantItemService.findOne(variantItemId);
+    // const product = await this.productService.findOneById(productId);
+    // const cart = await this.findCartByUserId(userId);
+    // const variantItem = await this.variantItemService.findOne(variantItemId);
+
+    const [product, cart, variantItem] = await Promise.all([
+      this.productService.findOneById(productId),
+      this.findCartByUserId(userId),
+      this.variantItemService.findOne(variantItemId),
+    ]);
+
     const variant = {
       itemId: variantItem.id,
       variant: variantItem.variant.name,
@@ -74,19 +81,38 @@ export class CartService {
       if (parsedVariant.itemId === variant.itemId) {
         existingCartItem.quantity += quantity;
         existingCartItem.totalPrice = parseFloat(`${existingCartItem.totalPrice}`) + totalPrice;
-        return this.cartItemRepository.save(existingCartItem);
+        await this.cartItemRepository.save(existingCartItem);
       }
+    } else {
+      const cartItem = this.cartItemRepository.create({
+        cart: { id: cart.id },
+        product: { id: product.id },
+        price: product.price,
+        quantity: quantity,
+        variant: JSON.stringify(variant),
+        totalPrice: totalPrice,
+      });
+
+      await this.cartItemRepository.save(cartItem);
     }
 
-    const cartItem = new CartItem();
-    cartItem.cart = cart;
-    cartItem.product = product;
-    cartItem.price = product.price;
-    cartItem.quantity = quantity;
-    cartItem.variant = JSON.stringify(variant);
-    cartItem.totalPrice = totalPrice;
+    await this.reCalculateCartTotalPrice(userId);
+  }
 
-    await this.cartItemRepository.save(cartItem);
+  private async reCalculateCartTotalPrice(userId: number) {
+    const cart = await this.findCartByUserId(userId);
+    const cartItems = await this.cartItemRepository.find({
+      where: {
+        cart: cart,
+      },
+    });
+    console.log(cartItems);
+    const cartTotalPrice = cartItems.reduce((acc, curr) => {
+      return parseFloat(`${curr.totalPrice}`) + acc;
+    }, 0);
+    console.log(cartTotalPrice, 'cartTotalPrice');
+    cart.totalPrice = cartTotalPrice;
+    await this.cartRepository.save(cart);
   }
 
   async findOneCartItem(cartItemId: number) {
@@ -110,5 +136,6 @@ export class CartService {
       throw new UnauthorizedException('You can not delete this cart item');
 
     await this.cartItemRepository.remove(cartItem);
+    await this.reCalculateCartTotalPrice(userId);
   }
 }

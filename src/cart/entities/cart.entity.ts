@@ -7,7 +7,7 @@ export class Cart {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   totalPrice: number;
 
   @OneToOne(() => User)
