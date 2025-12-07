@@ -1,4 +1,11 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
 import { Repository } from 'typeorm';
@@ -26,12 +33,15 @@ export class CartService {
     return this.cartRepository.save(cart);
   }
 
-  async findCart(userId: number) {
+  async findCartByUserId(userId: number) {
     const user = await this.userService.findOneById(userId);
 
     const cart = await this.cartRepository.findOne({
       where: {
         user: user,
+      },
+      relations: {
+        items: true,
       },
     });
 
@@ -43,7 +53,7 @@ export class CartService {
   async addItemToCart(userId: number, addToCartDto: AddToCartDto) {
     const { quantity, variantItemId, productId } = addToCartDto;
     const product = await this.productService.findOneById(productId);
-    const cart = await this.findCart(userId);
+    const cart = await this.findCartByUserId(userId);
     const variantItem = await this.variantItemService.findOne(variantItemId);
     const variant = {
       itemId: variantItem.id,
@@ -76,6 +86,29 @@ export class CartService {
     cartItem.variant = JSON.stringify(variant);
     cartItem.totalPrice = totalPrice;
 
-    return this.cartItemRepository.save(cartItem);
+    await this.cartItemRepository.save(cartItem);
+  }
+
+  async findOneCartItem(cartItemId: number) {
+    const cartItem = await this.cartItemRepository.findOne({
+      where: { id: cartItemId },
+      relations: {
+        cart: true,
+      },
+    });
+
+    if (!cartItem) throw new NotFoundException('Cart item not found');
+
+    return cartItem;
+  }
+
+  async removeItemFromCart(userId: number, cartItemId: number) {
+    const cartItem = await this.findOneCartItem(cartItemId);
+    const cart = await this.findCartByUserId(userId);
+
+    if (cartItem.cart.id !== cart.id)
+      throw new UnauthorizedException('You can not delete this cart item');
+
+    await this.cartItemRepository.remove(cartItem);
   }
 }
