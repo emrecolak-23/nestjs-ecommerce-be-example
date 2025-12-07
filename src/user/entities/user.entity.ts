@@ -1,10 +1,12 @@
 import { Exclude } from 'class-transformer';
 import { Role } from 'src/role/entities/role.entity';
+import { ShippingAddress } from 'src/shipping-address/entities/shipping-address.entity';
 import {
   Column,
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -33,4 +35,7 @@ export class User {
 
   @ManyToOne(() => Role, (role) => role.users)
   role: Role;
+
+  @OneToMany(() => ShippingAddress, (address) => address.user)
+  shippingAddress: ShippingAddress;
 }
