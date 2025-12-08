@@ -40,6 +40,11 @@ export class UserService {
       where: filterQuery,
       relations: {
         role: true,
+        orders: {
+          orderDetails: {
+            product: true,
+          },
+        },
       },
     });
 

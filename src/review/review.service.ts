@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Review } from './entities/review.entity';
 import { Repository } from 'typeorm';
@@ -22,6 +22,21 @@ export class ReviewService {
       this.productService.findOneById(createReviewDto.productId),
       this.userService.findOneById(userId),
     ]);
+
+    const allOrdersDetail = user.orders
+      .filter((order) => order.orderStatus === 'success')
+      .map((order) => order.orderDetails)
+      .flat();
+
+    if (allOrdersDetail.length === 0)
+      throw new UnauthorizedException('You must buy this product to make review');
+
+    const productOrderDetail = allOrdersDetail.find(
+      (orderDetail) => orderDetail.product?.id === createReviewDto.productId,
+    );
+
+    if (!productOrderDetail)
+      throw new UnauthorizedException('You must buy this product to make review');
 
     const review = new Review();
     review.content = createReviewDto.content;
