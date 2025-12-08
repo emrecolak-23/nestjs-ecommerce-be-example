@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ResponseUserDto } from 'src/user/dto';
+import { ShippingAddress } from '../entities/shipping-address.entity';
 
 export class ResponseShippingAddressDto {
   @ApiProperty()
@@ -15,8 +16,13 @@ export class ResponseShippingAddressDto {
   @Expose()
   phoneNumber: string;
 
+  // @ApiProperty()
+  // @Expose()
+  // @Type(() => ResponseUserDto)
+  // user: ResponseUserDto;
+
   @ApiProperty()
   @Expose()
-  @Type(() => ResponseUserDto)
-  user: ResponseUserDto;
+  @Transform(({ obj }: { obj: ShippingAddress }) => obj?.user?.id)
+  userId: number;
 }
