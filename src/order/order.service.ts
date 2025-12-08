@@ -95,4 +95,35 @@ export class OrderService {
 
     return this.orderRepository.save(order);
   }
+
+  async findAll() {
+    const orders = await this.orderRepository.find();
+
+    return orders;
+  }
+
+  async findMyOrders(userId: number) {
+    const orders = await this.orderRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    return orders;
+  }
+
+  async findOrderDetail(orderId: number) {
+    const orderDetails = await this.orderDetailRepository.find({
+      where: {
+        order: { id: orderId },
+      },
+    });
+
+    return orderDetails;
+  }
 }

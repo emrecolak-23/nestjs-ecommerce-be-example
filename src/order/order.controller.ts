@@ -1,17 +1,37 @@
-import { Body, Controller, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
-import { createApiResponseDto, CurrentUser, ResponseMessage, TransformDTO } from 'src/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UpdateOrderStatusDto, ProcessOrderDto, ResponseOrderDto } from './dto';
+import {
+  createApiResponseArrayDto,
+  createApiResponseDto,
+  CurrentUser,
+  ResponseMessage,
+  TransformDTO,
+} from 'src/common';
+import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  UpdateOrderStatusDto,
+  ProcessOrderDto,
+  ResponseOrderDto,
+  ResponseOrderDetailDto,
+} from './dto';
 
 @ApiTags('orders')
 @Controller('orders')
-@TransformDTO(ResponseOrderDto)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
   @ResponseMessage('Order created successfully')
+  @TransformDTO(ResponseOrderDto)
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: createApiResponseDto(ResponseOrderDto),
@@ -22,6 +42,7 @@ export class OrderController {
 
   @Patch(':id')
   @ResponseMessage('Order status changed successfully')
+  @TransformDTO(ResponseOrderDto)
   @ApiResponse({
     status: HttpStatus.CREATED,
     type: createApiResponseDto(ResponseOrderDto),
@@ -32,5 +53,32 @@ export class OrderController {
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ) {
     return this.orderService.updateOrderStatus(userId, id, updateOrderStatusDto);
+  }
+
+  @Get('')
+  @TransformDTO(ResponseOrderDto)
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseOrderDto),
+  })
+  findAll() {
+    return this.orderService.findAll();
+  }
+
+  @Get('me')
+  @TransformDTO(ResponseOrderDto)
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseOrderDto),
+  })
+  findMyAll(@CurrentUser('id') id: number) {
+    return this.orderService.findMyOrders(id);
+  }
+
+  @Get(':id/details')
+  @TransformDTO(ResponseOrderDetailDto)
+  @ApiOkResponse({
+    type: createApiResponseArrayDto(ResponseOrderDetailDto),
+  })
+  findAllOrderDetail(@Param('id', ParseIntPipe) id: number) {
+    return this.orderService.findOrderDetail(id);
   }
 }
