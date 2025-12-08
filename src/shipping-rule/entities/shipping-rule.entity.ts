@@ -10,9 +10,12 @@ export class ShippingRule {
   @Column({ type: 'varchar', length: 30 })
   type: SHIPPIN_RULE_TYPES;
 
-  @Column({ type: 'decimal', precision: 3, scale: 2 })
+  @Column({ type: 'decimal', precision: 6, scale: 2 })
   cost: number;
 
-  @Column({ type: 'date' })
-  estimateTime: Date;
+  @Column({ type: 'int' })
+  estimateDay: number;
+
+  @Column({ default: true })
+  status: boolean;
 }
