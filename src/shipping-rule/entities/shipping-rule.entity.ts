@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-export type SHIPPIN_RULE_TYPES = 'very fast' | 'fast' | 'normal';
+export type SHIPPIN_RULE_TYPES = 'very fast' | 'fast' | 'normal' | 'slow';
 
 @Entity()
 export class ShippingRule {

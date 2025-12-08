@@ -2,7 +2,7 @@ import { IsIn, IsNotEmpty, IsNumber } from 'class-validator';
 import type { SHIPPIN_RULE_TYPES } from '../entities/shipping-rule.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-const SHIPPING_TYPES = ['very fast', 'fast', 'normal'] as const;
+const SHIPPING_TYPES = ['very fast', 'fast', 'normal', 'slow'] as const;
 
 export class CreateShippingRuleDto {
   @ApiProperty()
