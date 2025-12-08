@@ -7,7 +7,6 @@ import { OrderDetail } from './entities/order-detail.entity';
 import { CartModule } from 'src/cart/cart.module';
 import { ShippingAddressModule } from 'src/shipping-address/shipping-address.module';
 import { ShippingRuleModule } from 'src/shipping-rule/shipping-rule.module';
-import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
