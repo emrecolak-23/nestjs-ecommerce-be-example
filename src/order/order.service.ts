@@ -58,6 +58,13 @@ export class OrderService {
 
       await transactionalEntityManager.save(OrderDetail, orderDetails);
 
+      const totalOrderPrice = orderDetails.reduce((acc, cur) => {
+        return parseFloat(`${cur.totalPrice}`) + acc;
+      }, 0);
+
+      newOrder.totalPrice = totalOrderPrice;
+      await transactionalEntityManager.save(Order, newOrder);
+
       return newOrder;
     });
   }
