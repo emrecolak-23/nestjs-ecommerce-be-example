@@ -46,4 +46,28 @@ export class ReviewService {
 
     return this.reviewRepository.save(review);
   }
+
+  async findAll() {
+    const reviews = await this.reviewRepository.find({
+      relations: {
+        product: true,
+        user: true,
+      },
+    });
+    return reviews;
+  }
+
+  async findMyAll(userId: number, productId: number) {
+    const reviews = await this.reviewRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+        product: {
+          id: productId,
+        },
+      },
+    });
+    return reviews;
+  }
 }

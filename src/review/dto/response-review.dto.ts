@@ -19,4 +19,9 @@ export class ResponseReviewDto {
   @Expose()
   @Transform(({ obj }: { obj: Review }) => obj?.product?.name)
   product: string;
+
+  @ApiProperty()
+  @Expose()
+  @Transform(({ obj }: { obj: Review }) => obj?.user?.id)
+  userId: number;
 }
