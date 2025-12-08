@@ -16,10 +16,10 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalPrice: number;
 
-  @Column()
+  @Column({ default: 'pending' })
   orderStatus: Status;
 
   @Column({ type: 'text' })

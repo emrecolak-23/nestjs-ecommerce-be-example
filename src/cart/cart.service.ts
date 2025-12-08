@@ -41,7 +41,9 @@ export class CartService {
         user: user,
       },
       relations: {
-        items: true,
+        items: {
+          product: true,
+        },
       },
     });
 

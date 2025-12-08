@@ -8,5 +8,6 @@ import { ShippingRule } from './entities/shipping-rule.entity';
   imports: [TypeOrmModule.forFeature([ShippingRule])],
   controllers: [ShippingRuleController],
   providers: [ShippingRuleService],
+  exports: [ShippingRuleService],
 })
 export class ShippingRuleModule {}
