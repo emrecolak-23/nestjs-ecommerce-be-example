@@ -1,13 +1,13 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from 'src/user/user.service';
-import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from './providers/bcrypt.service';
-import { UserPayload } from './types';
 import { SignInDto } from './dto/sign-in.dto';
 import { TokenService } from './providers';
 import { plainToInstance } from 'class-transformer';
 import { User } from 'src/user/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserCreatedEvent } from 'src/events';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +15,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly bcryptService: BcryptService,
     private readonly tokenService: TokenService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
@@ -32,6 +33,11 @@ export class AuthService {
       password: hashedPassword,
       role: 'user',
     });
+
+    this.eventEmitter.emit(
+      'user.created',
+      new UserCreatedEvent(user.id, user.email, user.firstname),
+    );
 
     const accessToken = await this.tokenService.generateToken(user.id, email);
 

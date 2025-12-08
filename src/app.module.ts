@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { Role } from './role/entities/role.entity';
@@ -36,6 +37,8 @@ import { ShippingRule } from './shipping-rule/entities/shipping-rule.entity';
 import { OrderModule } from './order/order.module';
 import { Order } from './order/entities/order.entity';
 import { OrderDetail } from './order/entities/order-detail.entity';
+import { EmailModule } from './email/email.module';
+import { ListenersModule } from './listeners/listeners.module';
 
 @Module({
   imports: [
@@ -76,6 +79,7 @@ import { OrderDetail } from './order/entities/order-detail.entity';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -121,6 +125,8 @@ import { OrderDetail } from './order/entities/order-detail.entity';
     ShippingAddressModule,
     ShippingRuleModule,
     OrderModule,
+    EmailModule,
+    ListenersModule,
   ],
   controllers: [],
   providers: [

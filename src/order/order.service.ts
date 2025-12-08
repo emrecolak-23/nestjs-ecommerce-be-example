@@ -7,6 +7,8 @@ import { CartService } from 'src/cart/cart.service';
 import { ProcessOrderDto, UpdateOrderStatusDto } from './dto';
 import { ShippingAddressService } from 'src/shipping-address/shipping-address.service';
 import { ShippingRuleService } from 'src/shipping-rule/shipping-rule.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderCreatedEvent } from 'src/events';
 
 @Injectable()
 export class OrderService {
@@ -16,6 +18,7 @@ export class OrderService {
     private readonly cartService: CartService,
     private readonly shippingAddressService: ShippingAddressService,
     private readonly shippingRuleService: ShippingRuleService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async process(userId: number, processOrderDto: ProcessOrderDto) {
@@ -35,37 +38,47 @@ export class OrderService {
       phoneNumber: address.phoneNumber,
     };
 
-    return await this.orderRepository.manager.transaction(async (transactionalEntityManager) => {
-      const order = new Order();
-      order.shippingAddress = JSON.stringify(shippingAddressInfo);
-      order.shippingMethod = JSON.stringify(rule);
-      order.user = { id: userId } as any;
+    const newOrder = await this.orderRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        const order = new Order();
+        order.shippingAddress = JSON.stringify(shippingAddressInfo);
+        order.shippingMethod = JSON.stringify(rule);
+        order.user = { id: userId } as any;
 
-      const newOrder = await transactionalEntityManager.save(Order, order);
+        const newOrder = await transactionalEntityManager.save(Order, order);
 
-      const orderDetails = cart.items.map((cartItem) => {
-        const orderDetail = new OrderDetail();
-        orderDetail.order = { id: newOrder.id } as any;
-        orderDetail.product = cartItem.product;
-        orderDetail.productName = cartItem.product.name;
-        orderDetail.productPrice = cartItem.product.price;
-        orderDetail.quantity = cartItem.quantity;
-        orderDetail.variant = cartItem.variant;
-        orderDetail.totalPrice = cartItem.totalPrice;
-        return orderDetail;
-      });
+        const orderDetails = cart.items.map((cartItem) => {
+          const orderDetail = new OrderDetail();
+          orderDetail.order = { id: newOrder.id } as any;
+          orderDetail.product = cartItem.product;
+          orderDetail.productName = cartItem.product.name;
+          orderDetail.productPrice = cartItem.product.price;
+          orderDetail.quantity = cartItem.quantity;
+          orderDetail.variant = cartItem.variant;
+          orderDetail.totalPrice = cartItem.totalPrice;
+          return orderDetail;
+        });
 
-      await transactionalEntityManager.save(OrderDetail, orderDetails);
+        await transactionalEntityManager.save(OrderDetail, orderDetails);
 
-      const totalOrderPrice = orderDetails.reduce((acc, cur) => {
-        return parseFloat(`${cur.totalPrice}`) + acc;
-      }, 0);
+        const totalOrderPrice = orderDetails.reduce((acc, cur) => {
+          return parseFloat(`${cur.totalPrice}`) + acc;
+        }, 0);
 
-      newOrder.totalPrice = totalOrderPrice;
-      await transactionalEntityManager.save(Order, newOrder);
-      await this.cartService.clearAllICartItems(userId);
-      return newOrder;
-    });
+        newOrder.totalPrice = totalOrderPrice;
+        await transactionalEntityManager.save(Order, newOrder);
+        await this.cartService.clearAllICartItems(userId);
+
+        return newOrder;
+      },
+    );
+
+    this.eventEmitter.emit(
+      'order.created',
+      new OrderCreatedEvent(newOrder.id, userId, address.user.email || '', newOrder.totalPrice),
+    );
+
+    return newOrder;
   }
 
   async findOrder(orderId: number, userId: number) {
