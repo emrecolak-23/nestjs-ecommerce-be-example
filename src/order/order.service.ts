@@ -1,13 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { OrderDetail } from './entities/order-detail.entity';
 import { CartService } from 'src/cart/cart.service';
-import { CreateOrderDto, ProcessOrderDto } from './dto';
+import { ProcessOrderDto, UpdateOrderStatusDto } from './dto';
 import { ShippingAddressService } from 'src/shipping-address/shipping-address.service';
 import { ShippingRuleService } from 'src/shipping-rule/shipping-rule.service';
-import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class OrderService {
@@ -64,10 +63,36 @@ export class OrderService {
 
       newOrder.totalPrice = totalOrderPrice;
       await transactionalEntityManager.save(Order, newOrder);
-
+      await this.cartService.clearAllICartItems(userId);
       return newOrder;
     });
   }
 
-  create(createOrderDto: CreateOrderDto) {}
+  async findOrder(orderId: number, userId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: {
+        user: true,
+        orderDetails: true,
+      },
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (order.user.id !== userId) throw new UnauthorizedException('You can not update this order');
+
+    return order;
+  }
+
+  async updateOrderStatus(
+    userId: number,
+    orderId: number,
+    updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    const order = await this.findOrder(orderId, userId);
+    console.log(order, 'orderr');
+    order.orderStatus = updateOrderStatusDto.status;
+
+    return this.orderRepository.save(order);
+  }
 }

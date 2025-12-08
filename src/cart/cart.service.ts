@@ -167,4 +167,9 @@ export class CartService {
     await this.cartItemRepository.remove(cartItem);
     await this.reCalculateCartTotalPrice(userId);
   }
+
+  async clearAllICartItems(userId: number) {
+    const cart = await this.findCartByUserId(userId);
+    await this.cartItemRepository.delete({ cart: { id: cart.id } });
+  }
 }
