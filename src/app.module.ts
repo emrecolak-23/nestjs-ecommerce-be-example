@@ -39,6 +39,8 @@ import { Order } from './order/entities/order.entity';
 import { OrderDetail } from './order/entities/order-detail.entity';
 import { EmailModule } from './email/email.module';
 import { ListenersModule } from './listeners/listeners.module';
+import { ReviewModule } from './review/review.module';
+import { Review } from './review/entities/review.entity';
 
 @Module({
   imports: [
@@ -105,6 +107,7 @@ import { ListenersModule } from './listeners/listeners.module';
           ShippingRule,
           Order,
           OrderDetail,
+          Review,
         ],
         synchronize: true,
       }),
@@ -127,6 +130,7 @@ import { ListenersModule } from './listeners/listeners.module';
     OrderModule,
     EmailModule,
     ListenersModule,
+    ReviewModule,
   ],
   controllers: [],
   providers: [
