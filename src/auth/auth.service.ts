@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from 'src/user/user.service';
 import { BcryptService } from './providers/bcrypt.service';
@@ -9,6 +9,7 @@ import { User } from 'src/user/entities/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from 'src/events';
 import { RoleService } from 'src/role/role.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly eventEmitter: EventEmitter2,
     private readonly roleService: RoleService,
+    private readonly configService: ConfigService,
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
@@ -42,9 +44,19 @@ export class AuthService {
       new UserCreatedEvent(user.id, user.email, user.firstname),
     );
 
-    const accessToken = await this.tokenService.generateToken(user.id, email, user.role.name);
+    // const accessToken = await this.tokenService.generateToken(user.id, email, user.role.name);
+    // const refreshToken = await this.tokenService.generateRefreshToken(
+    //   user.id,
+    //   email,
+    //   user.role.name,
+    // );
 
-    return { accessToken, user };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.generateToken(user.id, email, user.role.name),
+      this.tokenService.generateRefreshToken(user.id, email, user.role.name),
+    ]);
+
+    return { accessToken, refreshToken, user };
   }
 
   async signIn(signInDto: SignInDto) {
@@ -60,13 +72,40 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    const accessToken = await this.tokenService.generateToken(
-      existingUser.id,
-      existingUser.email,
-      existingUser.role.name,
-    );
+    // const accessToken = await this.tokenService.generateToken(
+    //   existingUser.id,
+    //   existingUser.email,
+    //   existingUser.role.name,
+    // );
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.generateToken(existingUser.id, existingUser.email, existingUser.role.name),
+      this.tokenService.generateRefreshToken(
+        existingUser.id,
+        existingUser.email,
+        existingUser.role.name,
+      ),
+    ]);
+
     const user = plainToInstance(User, existingUser);
 
-    return { accessToken, user };
+    return { accessToken, refreshToken, user };
+  }
+
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = await this.tokenService.verifyToken(refreshToken, {
+        secret: this.configService.get('REFRESH_SECRET'),
+      });
+      console.log(payload, 'payload');
+      const [newAccessToken, newRefreshToken] = await Promise.all([
+        this.tokenService.generateToken(payload.id, payload.email, payload.roleName),
+        this.tokenService.generateRefreshToken(payload.id, payload.email, payload.roleName),
+      ]);
+
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      throw new BadRequestException('Refresh token already expired');
+    }
   }
 }

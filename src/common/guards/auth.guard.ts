@@ -40,11 +40,12 @@ export class AuthGuard implements CanActivate {
         ...userPayload,
       };
     } catch (error) {
-      if (
-        error instanceof Error &&
-        (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')
-      ) {
-        throw new UnauthorizedException('Invalid or expired authentication token');
+      if (error instanceof Error && error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Expired authentication token');
+      }
+
+      if (error instanceof Error && error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid authentication token');
       }
       throw error;
     }
