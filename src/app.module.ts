@@ -8,7 +8,7 @@ import { User } from './user/entities/user.entity';
 import { Role } from './role/entities/role.entity';
 import { Endpoint } from './endpoint/entities/endpoint.entity';
 import { AuthModule } from './auth/auth.module';
-import { HttpExceptionFilter, ResponseInterceptor } from './common';
+import { HttpExceptionFilter, ResponseInterceptor, RolesInterceptor } from './common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './common';
 import { RoleModule } from './role/role.module';
@@ -134,6 +134,10 @@ import { Review } from './review/entities/review.entity';
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RolesInterceptor,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

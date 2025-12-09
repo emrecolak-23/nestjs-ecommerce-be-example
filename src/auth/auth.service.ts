@@ -8,6 +8,7 @@ import { plainToInstance } from 'class-transformer';
 import { User } from 'src/user/entities/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from 'src/events';
+import { RoleService } from 'src/role/role.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private readonly bcryptService: BcryptService,
     private readonly tokenService: TokenService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly roleService: RoleService,
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
@@ -27,11 +29,12 @@ export class AuthService {
     }
 
     const hashedPassword = await this.bcryptService.hash(password);
+    const userRole = await this.roleService.getRole('user');
     const user = await this.userService.create({
       ...userData,
       email,
       password: hashedPassword,
-      role: 'user',
+      role: userRole.name,
     });
 
     this.eventEmitter.emit(
@@ -39,7 +42,7 @@ export class AuthService {
       new UserCreatedEvent(user.id, user.email, user.firstname),
     );
 
-    const accessToken = await this.tokenService.generateToken(user.id, email);
+    const accessToken = await this.tokenService.generateToken(user.id, email, user.role.name);
 
     return { accessToken, user };
   }
@@ -57,7 +60,11 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    const accessToken = await this.tokenService.generateToken(existingUser.id, existingUser.email);
+    const accessToken = await this.tokenService.generateToken(
+      existingUser.id,
+      existingUser.email,
+      existingUser.role.name,
+    );
     const user = plainToInstance(User, existingUser);
 
     return { accessToken, user };

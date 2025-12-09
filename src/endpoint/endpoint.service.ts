@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEndpointDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Endpoint } from './entities/endpoint.entity';
+import { Endpoint, HttpMethod } from './entities/endpoint.entity';
 import { Repository } from 'typeorm';
 import { HttpAdapterHost } from '@nestjs/core';
 import { httpMethods } from './dto';
@@ -55,5 +55,18 @@ export class EndpointService {
     });
 
     return this.endpointRepository.save(endpoint);
+  }
+
+  async findOne(path: string, method: HttpMethod) {
+    const endpoint = await this.endpointRepository.findOne({
+      where: {
+        url: path,
+        method,
+      },
+    });
+
+    if (!endpoint) throw new NotFoundException('Endpoint not found');
+
+    return endpoint;
   }
 }

@@ -10,6 +10,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { RoleService } from 'src/role/role.service';
 import { CartModule } from 'src/cart/cart.module';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CartModule } from 'src/cart/cart.module';
       inject: [ConfigService],
     }),
     CartModule,
+    RoleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, BcryptService, UserService, TokenService, RoleService],
