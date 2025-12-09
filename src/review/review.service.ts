@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Review } from './entities/review.entity';
 import { Repository } from 'typeorm';
-import { CreateReviewDto } from './dto';
+import { CreateReviewDto, UpdateReviewDto } from './dto';
 import { ProductService } from 'src/product/product.service';
 import { UserService } from 'src/user/user.service';
 
@@ -69,5 +69,41 @@ export class ReviewService {
       },
     });
     return reviews;
+  }
+
+  async findOne(id: number) {
+    const review = await this.reviewRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        user: true,
+        product: true,
+      },
+    });
+
+    if (!review) throw new NotFoundException('Review not found');
+
+    return review;
+  }
+
+  async updateOne(id: number, updateReviewDto: UpdateReviewDto, userId: number) {
+    const { content, rating } = updateReviewDto;
+    const review = await this.findOne(id);
+
+    if (review.user.id !== userId) throw new UnauthorizedException('You can not edit this review');
+
+    review.content = content || review.content;
+    review.rating = rating || review.rating;
+
+    return this.reviewRepository.save(review);
+  }
+
+  async removeOne(id: number, userId: number) {
+    const review = await this.findOne(id);
+
+    if (review.user.id !== userId) throw new UnauthorizedException('You can not edit this review');
+
+    return this.reviewRepository.remove(review);
   }
 }
