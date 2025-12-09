@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Review } from './entities/review.entity';
 import { Repository } from 'typeorm';
@@ -17,6 +22,15 @@ export class ReviewService {
   async create(userId: number, createReviewDto: CreateReviewDto) {
     // const product = await this.productService.findOneById(createReviewDto.productId);
     // const user = await this.userService.findOneById(userId);
+
+    const reviewFound = await this.reviewRepository.findOne({
+      where: {
+        user: { id: userId },
+        product: { id: createReviewDto.productId },
+      },
+    });
+
+    if (reviewFound) throw new BadRequestException('Can not review the same product 2 times');
 
     const [product, user] = await Promise.all([
       this.productService.findOneById(createReviewDto.productId),
