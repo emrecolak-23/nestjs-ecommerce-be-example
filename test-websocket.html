@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+
+    <script>
+        const socket = io('http://localhost:8000/socket', {
+            transports: ['websocket', 'polling']
+        });
+
+        socket.on('connect', () => {
+            document.getElementById('status').innerHTML = '✅ Connected! Socket ID: ' + socket.id;
+            console.log('Connected:', socket.id);
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('status').innerHTML = '❌ Disconnected';
+            console.log('Disconnected');
+        });
+
+        socket.on('notification', (data) => {
+            const div = document.createElement('div');
+            div.innerHTML = '📧 Notification: ' + JSON.stringify(data);
+            document.getElementById('messages').appendChild(div);
+            console.log('Notification:', data);
+        });
+
+        socket.on('connect_error', (error) => {
+            document.getElementById('status').innerHTML = '❌ Connection Error: ' + error.message;
+            console.error('Connection error:', error);
+        });
+    </script>
+</body>
+</html>

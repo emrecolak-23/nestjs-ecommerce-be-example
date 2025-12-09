@@ -9,6 +9,7 @@ import { ShippingAddressService } from 'src/shipping-address/shipping-address.se
 import { ShippingRuleService } from 'src/shipping-rule/shipping-rule.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderCreatedEvent } from 'src/events';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +20,7 @@ export class OrderService {
     private readonly shippingAddressService: ShippingAddressService,
     private readonly shippingRuleService: ShippingRuleService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async process(userId: number, processOrderDto: ProcessOrderDto) {
@@ -76,6 +78,11 @@ export class OrderService {
     this.eventEmitter.emit(
       'order.created',
       new OrderCreatedEvent(newOrder.id, userId, address.user.email || '', newOrder.totalPrice),
+    );
+
+    // Send notification
+    this.notificationService.sendNotification(
+      `User with Id: ${userId} already buy the order: ${newOrder.id}`,
     );
 
     return newOrder;

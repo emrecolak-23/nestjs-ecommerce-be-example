@@ -41,6 +41,8 @@ import { EmailModule } from './email/email.module';
 import { ListenersModule } from './listeners/listeners.module';
 import { ReviewModule } from './review/review.module';
 import { Review } from './review/entities/review.entity';
+import { NotificationGateway } from './notification/notification.gateway';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -131,6 +133,7 @@ import { Review } from './review/entities/review.entity';
     EmailModule,
     ListenersModule,
     ReviewModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [
@@ -151,6 +154,7 @@ import { Review } from './review/entities/review.entity';
       useClass: AuthGuard,
     },
     EndpointSeedService,
+    NotificationGateway,
   ],
 })
 export class AppModule {}

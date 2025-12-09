@@ -34,11 +34,11 @@ export class CartService {
   }
 
   async findCartByUserId(userId: number) {
-    const user = await this.userService.findOneById(userId);
-
     const cart = await this.cartRepository.findOne({
       where: {
-        user: user,
+        user: {
+          id: userId,
+        },
       },
       relations: {
         items: {
