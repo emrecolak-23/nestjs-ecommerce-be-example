@@ -31,6 +31,10 @@ export class NotificationService {
 
     if (!notification) throw new NotFoundException('Notification not found');
 
+    notification.isRead = true;
+
+    await this.notificationRepository.save(notification);
+
     return notification;
   }
 
