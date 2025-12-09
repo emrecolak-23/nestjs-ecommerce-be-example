@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 import { NotificationPayload } from './interfaces/notification.interface';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,5 +20,21 @@ export class NotificationService {
     });
     const storedNotification = await this.notificationRepository.save(notification);
     this.notificationGateway.sendNotification(storedNotification);
+  }
+
+  async findOne(id: number) {
+    const notification = await this.notificationRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    return notification;
+  }
+
+  async findAll() {
+    return this.notificationRepository.find();
   }
 }

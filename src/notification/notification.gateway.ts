@@ -1,12 +1,10 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { NotificationPayload } from './interfaces/notification.interface';
 import { Notification } from './entity/notification.entity';
 
 @WebSocketGateway({
