@@ -81,9 +81,10 @@ export class OrderService {
     );
 
     // Send notification
-    this.notificationService.sendNotification(
-      `User with Id: ${userId} already buy the order: ${newOrder.id}`,
-    );
+    this.notificationService.sendNotification({
+      type: 'Order',
+      message: `User with Id: ${userId} already buy the order: ${newOrder.id}`,
+    });
 
     return newOrder;
   }

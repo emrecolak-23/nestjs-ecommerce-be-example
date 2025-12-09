@@ -1,12 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
+import { NotificationPayload } from './interfaces/notification.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Notification } from './entity/notification.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class NotificationService {
-  constructor(private readonly notificationGateway: NotificationGateway) {}
+  constructor(
+    @InjectRepository(Notification) private notificationRepository: Repository<Notification>,
+    private readonly notificationGateway: NotificationGateway,
+  ) {}
 
-  async sendNotification(message: string) {
-    console.log(message, 'notify message');
-    this.notificationGateway.sendNotification(message);
+  async sendNotification(payload: NotificationPayload) {
+    console.log(payload, 'notify payload');
+    const notification = this.notificationRepository.create({
+      type: payload.type,
+      message: payload.message,
+    });
+    const storedNotification = await this.notificationRepository.save(notification);
+    this.notificationGateway.sendNotification(storedNotification);
   }
 }

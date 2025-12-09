@@ -6,6 +6,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { NotificationPayload } from './interfaces/notification.interface';
+import { Notification } from './entity/notification.entity';
 
 @WebSocketGateway({
   namespace: 'socket',
@@ -30,7 +32,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     this.clients.delete(client.id);
   }
 
-  sendNotification(notification: any) {
+  sendNotification(notification: Notification) {
     this.server.emit('notification', notification);
   }
 }

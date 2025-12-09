@@ -43,6 +43,7 @@ import { ReviewModule } from './review/review.module';
 import { Review } from './review/entities/review.entity';
 import { NotificationGateway } from './notification/notification.gateway';
 import { NotificationModule } from './notification/notification.module';
+import { Notification } from './notification/entity/notification.entity';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { NotificationModule } from './notification/notification.module';
           Order,
           OrderDetail,
           Review,
+          Notification,
         ],
         synchronize: true,
       }),
