@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -23,10 +24,12 @@ import {
   ResponseMessage,
   TransformDTO,
 } from 'src/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @ApiTags('Category')
 @TransformDTO(ResponseCategoryDto)
 @Controller('categories')
+@UseInterceptors(CacheInterceptor)
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
