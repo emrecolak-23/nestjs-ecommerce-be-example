@@ -1,16 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { CategoryService } from 'src/category/category.service';
 import { FilterOperator, FilterSuffix, PaginateQuery, paginate, Paginated } from 'nestjs-paginate';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProductService {
+  private cacheKey: string = 'products';
+
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     private readonly categoryService: CategoryService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -19,7 +24,11 @@ export class ProductService {
     product.category = category;
     Object.assign(product, createProductDto);
 
-    return this.productRepository.save(product);
+    const storedProduct = await this.productRepository.save(product);
+
+    await this.clearCache(storedProduct.id, storedProduct.slug);
+
+    return storedProduct;
   }
 
   //   async findAll() {
@@ -32,7 +41,18 @@ export class ProductService {
   }
 
   async findAll(query: PaginateQuery): Promise<Paginated<Product>> {
-    const products = paginate(query, this.productRepository, {
+    const cachedProducts = await this.cacheManager.get<Paginated<Product>>(
+      `${this.cacheKey}:${JSON.stringify(query)}`,
+    );
+
+    if (cachedProducts) {
+      console.log('get from products');
+      return cachedProducts;
+    }
+
+    console.log(JSON.stringify(query), 'query product');
+
+    const products = await paginate(query, this.productRepository, {
       sortableColumns: ['id', 'name', 'price'],
       defaultSortBy: [['price', 'DESC']],
       searchableColumns: ['name', 'longDescription', 'shortDescription'],
@@ -43,10 +63,21 @@ export class ProductService {
       },
     });
 
+    await this.cacheManager.set(`${this.cacheKey}:${JSON.stringify(query)}`, products);
+
     return products;
   }
 
   async findOne(filterQuery: FindOptionsWhere<Product>) {
+    const productCached = await this.cacheManager.get<Product>(
+      `${this.cacheKey}:${filterQuery.id || filterQuery.slug}`,
+    );
+
+    if (productCached) {
+      console.log('return from cached');
+      return productCached;
+    }
+
     const product = await this.productRepository.findOne({
       where: filterQuery,
       relations: {
@@ -56,6 +87,8 @@ export class ProductService {
       },
     });
     if (!product) throw new NotFoundException('Product not found');
+
+    await this.cacheManager.set(`${this.cacheKey}:${filterQuery.id || filterQuery.slug}`, product);
 
     return product;
   }
@@ -78,12 +111,24 @@ export class ProductService {
 
     Object.assign(product, updateProductDto);
 
+    await this.clearCache(product.id, product.slug);
+
     return this.productRepository.save(product);
   }
 
   async deleteOne(id: number) {
     const product = await this.findOneById(id);
 
+    await this.clearCache(product.id, product.slug);
+
     return this.productRepository.softRemove(product);
+  }
+
+  async clearCache(id: number, slug: string) {
+    await Promise.all([
+      this.cacheManager.del(this.cacheKey),
+      this.cacheManager.del(`${this.cacheKey}:${id}`),
+      this.cacheManager.del(`${this.cacheKey}:${slug}`),
+    ]);
   }
 }
