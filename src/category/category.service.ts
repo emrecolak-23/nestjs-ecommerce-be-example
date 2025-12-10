@@ -26,7 +26,7 @@ export class CategoryService {
     const category = new Category();
     category.parent = parentCategory ? parentCategory : null;
     Object.assign(category, createCategoryDto);
-
+    await this.clearCache(category.id);
     return this.categoryRepository.save(category);
   }
 
@@ -79,11 +79,21 @@ export class CategoryService {
 
     Object.assign(existingCategory, updateCategoryDto);
 
+    await this.clearCache(id);
+
     return this.categoryRepository.save(existingCategory);
   }
 
   async deleteOne(id: number) {
     const existingCategory = (await this.findOne(id)) as Category;
+    await this.clearCache(id);
     return this.categoryRepository.softRemove(existingCategory);
+  }
+
+  private async clearCache(id: number) {
+    await Promise.all([
+      this.cacheManager.del(`${this.cacheKey}:${id}`),
+      this.cacheManager.del(this.cacheKey),
+    ]);
   }
 }
