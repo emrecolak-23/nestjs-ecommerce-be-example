@@ -44,9 +44,13 @@ import { Review } from './review/entities/review.entity';
 import { NotificationGateway } from './notification/notification.gateway';
 import { NotificationModule } from './notification/notification.module';
 import { Notification } from './notification/entity/notification.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register({
+      isGlobal: true,
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
