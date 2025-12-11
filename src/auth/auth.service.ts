@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from 'src/user/user.service';
 import { BcryptService } from './providers/bcrypt.service';
@@ -13,6 +13,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly userService: UserService,
     private readonly bcryptService: BcryptService,
@@ -69,6 +71,7 @@ export class AuthService {
 
     const isPasswordValid = await this.bcryptService.compare(password!, existingUser.password);
     if (!isPasswordValid) {
+      this.logger.error('The user input wrong information');
       throw new ForbiddenException('Invalid credentials');
     }
 

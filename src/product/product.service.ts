@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -10,6 +10,7 @@ import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProductService {
+  private readonly logger = new Logger(ProductService.name);
   private cacheKey: string = 'products';
 
   constructor(
@@ -41,16 +42,16 @@ export class ProductService {
   }
 
   async findAll(query: PaginateQuery): Promise<Paginated<Product>> {
+    this.logger.debug(`Get all products with ${JSON.stringify(query)}`);
+
     const cachedProducts = await this.cacheManager.get<Paginated<Product>>(
       `${this.cacheKey}:${JSON.stringify(query)}`,
     );
 
     if (cachedProducts) {
-      console.log('get from products');
+      this.logger.debug('return products from cache');
       return cachedProducts;
     }
-
-    console.log(JSON.stringify(query), 'query product');
 
     const products = await paginate(query, this.productRepository, {
       sortableColumns: ['id', 'name', 'price'],
