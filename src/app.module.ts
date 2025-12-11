@@ -45,6 +45,7 @@ import { NotificationGateway } from './notification/notification.gateway';
 import { NotificationModule } from './notification/notification.module';
 import { Notification } from './notification/entity/notification.entity';
 import { CacheModule } from '@nestjs/cache-manager';
+import { PasswordChangeRequest } from './user/entities/password-change-request.entity';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { CacheModule } from '@nestjs/cache-manager';
           OrderDetail,
           Review,
           Notification,
+          PasswordChangeRequest,
         ],
         synchronize: true,
       }),

@@ -30,5 +30,6 @@ import { RoleModule } from 'src/role/role.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, BcryptService, UserService, TokenService, RoleService],
+  exports: [BcryptService],
 })
 export class AuthModule {}

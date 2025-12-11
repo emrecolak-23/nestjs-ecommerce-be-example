@@ -105,6 +105,12 @@ export class UserService {
     const newHashedPassword = await this.bcryptService.hash(changePasswordDto.newPassword);
     user.password = newHashedPassword;
 
+    const updatedUser = await this.userRepository.save(user);
+
+    return updatedUser;
+  }
+
+  async save(user: User) {
     return this.userRepository.save(user);
   }
 }
